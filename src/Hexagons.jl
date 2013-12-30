@@ -131,31 +131,33 @@ end
 # Conversion between euclidean and hexagon coordinates
 # ----------------------------------------------------
 
-function center(hex::HexagonAxial, size=1.0, xoff=1.0, yoff=1.0)
-    (xoff + size * sqrt(3) * (hex.q + hex.r/2), yoff + size * (3/2) * hex.r)
+function center(hex::HexagonAxial, xsize=1.0, ysize=1.0, xoff=1.0, yoff=1.0)
+    (xoff + xsize * sqrt(3) * (hex.q + hex.r/2), yoff + ysize * (3/2) * hex.r)
 end
 
 
-function center(hex::Hexagon, size=1.0, xoff=1.0, yoff=1.0)
-    center(convert(HexagonAxial, hex), size, xoff, yoff)
+function center(hex::Hexagon, xsize=1.0, ysize=1.0, xoff=1.0, yoff=1.0)
+    center(convert(HexagonAxial, hex), xsize, ysize, xoff, yoff)
 end
 
 
 immutable HexPointIterator
     x_center::Float64
     y_center::Float64
-    size::Float64
+    xsize::Float64
+    ysize::Float64
 end
 
 
-function points(hex::Hexagon, size=1.0, xoff=0.0, yoff=0.0)
+function points(hex::Hexagon, xsize=1.0, ysize=1.0, xoff=0.0, yoff=0.0)
     c = center(hex, size, xoff, yoff)
     return HexPointIterator(c[1], c[2], size)
 end
 
 
-function hexpoints(c::(Any, Any), size=1.0)
-    return HexPointIterator(float64(c[1]), float64(c[2]), float64(size))
+function hexpoints(c::(Any, Any), xsize=1.0, ysize=1.0)
+    return HexPointIterator(float64(c[1]), float64(c[2]),
+                            float64(xsize), float64(ysize))
 end
 
 
@@ -166,8 +168,8 @@ end
 
 function next(it::HexPointIterator, state)
     theta = 2*pi/6 * (state-1+0.5)
-    x_i = it.x_center + it.size * cos(theta)
-    y_i = it.y_center + it.size * sin(theta)
+    x_i = it.x_center + it.xsize * cos(theta)
+    y_i = it.y_center + it.ysize * sin(theta)
     return ((x_i, y_i), state+1)
 end
 
@@ -196,9 +198,11 @@ end
 
 # Return the index (in axial coordinates) of the hexagon containing the
 # point x, y
-function pointhex(x, y, size=1.0)
-    q = (sqrt(3)/3 * x - y/3) / size
-    r = (2 * y / 3) / size
+function pointhex(x, y, xsize=1.0, ysize=1.0)
+    x /= xsize
+    y /= ysize
+    q = sqrt(3)/3 * x - y/3
+    r = 2 * y / 3
     h = nearest_cubic_hexagon(q, -q - r, r)
     #return h
 
