@@ -1,10 +1,10 @@
 
 module Hexagons
 
-import Base: convert, start, next, done
+import Base: convert, start, next, done, length
 
 export HexagonAxial, HexagonCubic, HexagonOffsetOddR, HexagonOffsetEvenR,
-       center, points, hexpoints, pointhex, neighbors
+       center, points, HexPoints, hexpoints, pointhex, neighbors
 
 
 # Various ways to index hexagons in a grid
@@ -141,32 +141,42 @@ function center(hex::Hexagon, xsize=1.0, ysize=1.0, xoff=1.0, yoff=1.0)
 end
 
 
-immutable HexPointIterator
+immutable HexPoints
     x_center::Float64
     y_center::Float64
     xsize::Float64
     ysize::Float64
+
+    function HexPoints(x, y, xsize=1.0, ysize=1.0)
+        return new(float64(x), float64(y), float64(xsize), float64(ysize))
+    end
+end
+
+
+function length(it::HexPoints)
+    return 6
 end
 
 
 function points(hex::Hexagon, xsize=1.0, ysize=1.0, xoff=0.0, yoff=0.0)
     c = center(hex, size, xoff, yoff)
-    return HexPointIterator(c[1], c[2], size)
+    return HexPoints(c[1], c[2], size)
 end
 
 
-function hexpoints(c::(Any, Any), xsize=1.0, ysize=1.0)
-    return HexPointIterator(float64(c[1]), float64(c[2]),
-                            float64(xsize), float64(ysize))
+function hexpoints(x, y, xsize=1.0, ysize=1.0)
+    collect((Float64, Float64),
+            HexPoints(float64(x), float64(y),
+                      float64(xsize), float64(ysize)))
 end
 
 
-function start(it::HexPointIterator)
+function start(it::HexPoints)
     return 1
 end
 
 
-function next(it::HexPointIterator, state)
+function next(it::HexPoints, state)
     theta = 2*pi/6 * (state-1+0.5)
     x_i = it.x_center + it.xsize * cos(theta)
     y_i = it.y_center + it.ysize * sin(theta)
@@ -174,7 +184,7 @@ function next(it::HexPointIterator, state)
 end
 
 
-function done(it::HexPointIterator, state)
+function done(it::HexPoints, state)
     return state > 6
 end
 
