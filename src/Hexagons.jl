@@ -1,5 +1,6 @@
-
 module Hexagons
+
+using Compat
 
 import Base: convert, start, next, done, length
 
@@ -191,7 +192,7 @@ end
 
 # Find the nearest hexagon in cubic coordinates.
 function nearest_cubic_hexagon(x::Real, y::Real, z::Real)
-    rx, ry, rz = iround(x), iround(y), iround(z)
+    rx, ry, rz = round(Integer, x), round(Integer, y), round(Integer, z)
     x_diff, y_diff, z_diff = abs(rx - x), abs(ry - y), abs(rz - z)
 
     if x_diff > y_diff && x_diff > z_diff
