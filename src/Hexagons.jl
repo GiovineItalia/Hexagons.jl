@@ -220,9 +220,9 @@ hexagons_within(hex::Hexagon, n::Int) = hexagons_within(n, hex)
 
 length(it::HexagonDistanceIterator) = it.n * (it.n + 1) * 3 + 1
 start(it::HexagonDistanceIterator) = (-it.n, 0)
-done(it::HexagonDistanceIterator, state::(Int,Int)) = (state[1] > it.n)
+done(it::HexagonDistanceIterator, state::(@compat Tuple{Int, Int})) = (state[1] > it.n)
 
-function next(it::HexagonDistanceIterator, state::(Int,Int))
+function next(it::HexagonDistanceIterator, state::(@compat Tuple{Int,Int}))
     x, y = state
     z = -x-y
     hex = HexagonCubic(x, y, z)
@@ -253,9 +253,9 @@ ring(hex::Hexagon, n::Int) = ring(n, hex)
 
 length(it::HexagonRingIterator) = it.n * 6
 start(it::HexagonRingIterator) = (1, neighbor(it.hex, 5, it.n))
-done(it::HexagonRingIterator, state::(Int,HexagonCubic)) = state[1] > length(it)
+done(it::HexagonRingIterator, state::(@compat Tuple{Int, HexagonCubic})) = state[1] > length(it)
 
-function next(it::HexagonRingIterator, state::(Int,HexagonCubic))
+function next(it::HexagonRingIterator, state::(@compat Tuple{Int, HexagonCubic}))
     hex_i, cur_hex = state
     # println("HexagonRingIterator: at position $hex_i ($cur_hex)")
     ring_part = div(hex_i - 1, it.n) + 1
@@ -273,6 +273,13 @@ immutable HexagonSpiralIterator
     n::Int
 end
 
+immutable HexagonSpiralIteratorState
+    hexring_i::Int
+    hexring_it::HexagonRingIterator
+    hexring_it_i::Int
+    hexring_it_hex::HexagonCubic
+end
+
 function spiral(n::Int, hex::Hexagon = hexagon(0, 0))
     cubic_hex = convert(HexagonCubic, hex)
     HexagonSpiralIterator(cubic_hex, n)
@@ -282,19 +289,18 @@ spiral(hex::Hexagon, n::Int) = spiral(n, hex)
 length(it::HexagonSpiralIterator) = it.n * (it.n + 1) * 3
 function start(it::HexagonSpiralIterator)
     first_ring = ring(it.hex, 1)
-    (1, (first_ring, start(first_ring)))
+    HexagonSpiralIteratorState(1, first_ring, start(first_ring)...)
 end
-done(it::HexagonSpiralIterator,
-     state::(Int,(HexagonRingIterator,(Int,HexagonCubic)))) = state[1] > it.n
+done(it::HexagonSpiralIterator, state::HexagonSpiralIteratorState) = state.hexring_i > it.n
 
 # The state of a HexagonSpiralIterator consists of
 # 1. an Int, the index of the current ring
 # 2. a HexagonRingIterator and its state to keep track of the current position
 #    in the ring.
-function next(it::HexagonSpiralIterator,
-              state::(Int,(HexagonRingIterator,(Int,HexagonCubic))))
+function next(it::HexagonSpiralIterator, state::HexagonSpiralIteratorState)
     # Get current state
-    hexring_i, (hexring_it, (hexring_it_i, hexring_it_hex)) = state
+    hexring_i, hexring_it, hexring_it_i, hexring_it_hex =
+        state.hexring_i, state.hexring_it, state.hexring_it_i, state.hexring_it_hex
     # Update state of inner iterator
     hexring_it_hex, (hexring_it_i, hexring_it_hex_next) =
                 next(hexring_it, (hexring_it_i, hexring_it_hex))
@@ -307,7 +313,7 @@ function next(it::HexagonSpiralIterator,
     end
 
     # println("Currently at $hexring_it_hex, hexring is $hexring_it, state is $((hexring_i, (hexring_it_i, hexring_it_hex)))")
-    hexring_it_hex, (hexring_i, (hexring_it, (hexring_it_i, hexring_it_hex_next)))
+    hexring_it_hex, HexagonSpiralIteratorState(hexring_i, hexring_it, hexring_it_i, hexring_it_hex_next)
 end
 
 collect(it::HexagonSpiralIterator) = collect(HexagonCubic, it)
