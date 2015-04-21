@@ -27,7 +27,7 @@ The six points (in cartesian space) of a hexagon can be iterated through with
 `points`.
 
 ```julia
-for (x, y) in points(HexagonAxial(2, 3))
+for (x, y) in vertices(HexagonAxial(2, 3))
     # ...
 end
 ```
@@ -39,10 +39,10 @@ x, y = center(HexagonAxial(2, 3))
 ```
 
 A point in cartesian space can be mapped to the index of the hexagon that
-contains it with the `pointhex` function.
+contains it with the `cube_round` function.
 
 ```julia
-h = pointhex(23.5, 4.67)
+h = cube_round(23.5, 4.67)
 ```
 
 ## Status

@@ -361,7 +361,7 @@ function nearest_cubic_hexagon(x::Real, y::Real, z::Real)
     HexagonCubic(rx, ry, rz)
 end
 
-# Return the index (in axial coordinates) of the hexagon containing the
+# Return the index (in cubic coordinates) of the hexagon containing the
 # point x, y
 function cube_round(x, y, xsize=1.0, ysize=1.0)
     x /= xsize
