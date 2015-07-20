@@ -174,13 +174,15 @@ immutable HexagonVertexIterator
     ysize::Float64
 
     function HexagonVertexIterator(x, y, xsize=1.0, ysize=1.0)
-        new(float64(x), float64(y), float64(xsize), float64(ysize))
+        new((@compat Float64(x)), (@compat Float64(y)),
+            (@compat Float64(xsize)), (@compat Float64(ysize)))
     end
 
     function HexagonVertexIterator(hex::Hexagon,
                                    xsize=1.0, ysize=1.0, xoff=0.0, yoff=0.0)
         c = center(hex, xsize, ysize, xoff, yoff)
-        new(float64(c[1]), float64(c[2]), float64(xsize), float64(ysize))
+        new((@compat Float64(c[1])), (@compat Float64(c[2])),
+            (@compat Float64(xsize)), (@compat Float64(ysize)))
     end
 end
 
@@ -191,9 +193,9 @@ end
 
 # TODO: remove this function?
 function hexpoints(x, y, xsize=1.0, ysize=1.0)
-    collect((Float64, Float64),
-            HexagonVertexIterator(float64(x), float64(y),
-                                  float64(xsize), float64(ysize)))
+    collect((@compat Tuple{Float64, Float64}),
+            HexagonVertexIterator((@compat Float64(x)), (@compat Float64(y)),
+                                  (@compat Float64(xsize)), (@compat Float64(ysize))))
 end
 
 length(::HexagonVertexIterator) = 6
