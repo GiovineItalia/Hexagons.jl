@@ -19,7 +19,7 @@ export HexagonAxial, HexagonCubic, HexagonOffsetOddR, HexagonOffsetEvenR,
 # Various ways to index hexagons in a grid
 # ----------------------------------------
 
-abstract Hexagon
+@compat abstract type Hexagon end
 
 immutable HexagonAxial <: Hexagon
     q::Int
