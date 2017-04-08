@@ -1,6 +1,9 @@
 
 # Hexagons
 
+[![Build
+Status](https://travis-ci.org/GiovineItalia/Hexagons.jl.svg?branch=master)](https://travis-ci.org/GiovineItalia/Hexagons.jl)
+
 This package provides some basic utilities for working with hexagonal grids. It
 is largely works from Amit Patel's [terrific
 refererence](http://www.redblobgames.com/grids/hexagons/).
