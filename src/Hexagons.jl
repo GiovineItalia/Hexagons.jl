@@ -1,4 +1,4 @@
-nothingmodule Hexagons
+module Hexagons
 
 using Compat
 
@@ -193,9 +193,9 @@ end
 
 # TODO: remove this function?
 function hexpoints(x, y, xsize=1.0, ysize=1.0)
-    collect((Tuple{Float64, Float64}),
-            HexagonVertexIterator((Float64(x)), (Float64(y)),
-                                  (Float64(xsize)), (Float64(ysize))))
+    collect(Tuple{Float64, Float64},
+            HexagonVertexIterator(Float64(x), Float64(y),
+                                  Float64(xsize), Float64(ysize)))
 end
 
 length(::HexagonVertexIterator) = 6
@@ -222,9 +222,9 @@ hexagons_within(hex::Hexagon, n::Int) = hexagons_within(n, hex)
 
 length(it::HexagonDistanceIterator) = it.n * (it.n + 1) * 3 + 1
 start(it::HexagonDistanceIterator) = (-it.n, 0)
-done(it::HexagonDistanceIterator, state::(Tuple{Int, Int})) = (state[1] > it.n)
+done(it::HexagonDistanceIterator, state::Tuple{Int, Int}) = (state[1] > it.n)
 
-function next(it::HexagonDistanceIterator, state::(Tuple{Int,Int}))
+function next(it::HexagonDistanceIterator, state::Tuple{Int,Int})
     x, y = state
     z = -x-y
     hex = HexagonCubic(x, y, z)
@@ -255,7 +255,7 @@ ring(hex::Hexagon, n::Int) = ring(n, hex)
 
 length(it::HexagonRingIterator) = it.n * 6
 start(it::HexagonRingIterator) = (1, neighbor(it.hex, 5, it.n))
-done(it::HexagonRingIterator, state::(Tuple{Int, HexagonCubic})) = state[1] > length(it)
+done(it::HexagonRingIterator, state::Tuple{Int, HexagonCubic}) = state[1] > length(it)
 
 function next(it::HexagonRingIterator, state::(Tuple{Int, HexagonCubic}))
     hex_i, cur_hex = state
