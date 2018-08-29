@@ -120,7 +120,7 @@ neighbors(hex::Hexagon) = HexagonNeighborIterator(convert(HexagonCubic, hex))
 
 length(::HexagonNeighborIterator) = 6
 
-function Base.iterate(it::HexagonNeighborIterator, state=1)
+function iterate(it::HexagonNeighborIterator, state=1)
     state > 6 && return nothing
     dx = CUBIC_HEX_NEIGHBOR_OFFSETS[state, 1]
     dy = CUBIC_HEX_NEIGHBOR_OFFSETS[state, 2]
@@ -150,7 +150,7 @@ diagonals(hex::Hexagon) = HexagonDiagonalIterator(convert(HexagonCubic, hex))
 
 length(::HexagonDiagonalIterator) = 6
 
-function Base.iterate(it::HexagonDiagonalIterator, state=1)
+function iterate(it::HexagonDiagonalIterator, state=1)
     state > 6 && return nothing
     dx = CUBIC_HEX_DIAGONAL_OFFSETS[state, 1]
     dy = CUBIC_HEX_DIAGONAL_OFFSETS[state, 2]
@@ -189,21 +189,20 @@ end
 
 # TODO: remove this function?
 function hexpoints(x, y, xsize=1.0, ysize=1.0)
-    collect((Tuple{Float64, Float64}),
-            HexagonVertexIterator((Float64(x)), (Float64(y)),
-                                  (Float64(xsize)), (Float64(ysize))))
+    collect(Tuple{Float64, Float64},
+            HexagonVertexIterator(Float64(x), Float64(y),
+                                  Float64(xsize), Float64(ysize)))
 end
 
 length(::HexagonVertexIterator) = 6
 
-function Base.iterate(it::HexagonVertexIterator, state=1)
+function iterate(it::HexagonVertexIterator, state=1)
     state > 6 && return nothing
     theta = 2*pi/6 * (state-1+0.5)
     x_i = it.x_center + it.xsize * cos(theta)
     y_i = it.y_center + it.ysize * sin(theta)
     return ((x_i, y_i), state + 1)
 end
-
 
 struct HexagonDistanceIterator
     hex::HexagonCubic
@@ -218,7 +217,7 @@ hexagons_within(hex::Hexagon, n::Int) = hexagons_within(n, hex)
 
 length(it::HexagonDistanceIterator) = it.n * (it.n + 1) * 3 + 1
 
-function Base.iterate(it::HexagonDistanceIterator, state=(-it.n, 0))
+function iterate(it::HexagonDistanceIterator, state=(-it.n, 0))
     x, y = state
     x > it.n && return nothing
     z = -x-y
@@ -251,7 +250,7 @@ ring(hex::Hexagon, n::Int) = ring(n, hex)
 
 length(it::HexagonRingIterator) = it.n * 6
 
-function Base.iterate(it::HexagonRingIterator,
+function iterate(it::HexagonRingIterator,
                  state::(Tuple{Int, HexagonCubic})=(1, neighbor(it.hex, 5, it.n)))
     hex_i, cur_hex = state
     hex_i > length(it) && return nothing
@@ -285,17 +284,18 @@ end
 spiral(hex::Hexagon, n::Int) = spiral(n, hex)
 
 length(it::HexagonSpiralIterator) = it.n * (it.n + 1) * 3
-function _start(it::HexagonSpiralIterator)
-    first_ring = ring(it.hex, 1)
-    HexagonSpiralIteratorState(1, first_ring, start(first_ring)...)
-end
 
 # The state of a HexagonSpiralIterator consists of
 # 1. an Int, the index of the current ring
 # 2. a HexagonRingIterator and its state to keep track of the current position
 #    in the ring.
-function Base.iterate(it::HexagonSpiralIterator,
-                      state::HexagonSpiralIteratorState=_start(it))
+
+function iterate(it::HexagonSpiralIterator)
+    first_ring = ring(it.hex, 1)
+    iterate(it, HexagonSpiralIteratorState(1, first_ring, start(first_ring)...))
+end
+
+function iterate(it::HexagonSpiralIterator, state::HexagonSpiralIteratorState)
     state.hexring_i > it.n && return nothing
     # Get current state
     hexring_i, hexring_it, hexring_it_i, hexring_it_hex =
