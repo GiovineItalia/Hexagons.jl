@@ -1,6 +1,4 @@
-VERSION >= v"0.4.0-dev+6641" && __precompile__()
-
-module Hexagons
+nothingmodule Hexagons
 
 using Compat
 
@@ -19,25 +17,25 @@ export HexagonAxial, HexagonCubic, HexagonOffsetOddR, HexagonOffsetEvenR,
 # Various ways to index hexagons in a grid
 # ----------------------------------------
 
-@compat abstract type Hexagon end
+abstract type Hexagon end
 
-immutable HexagonAxial <: Hexagon
+struct HexagonAxial <: Hexagon
     q::Int
     r::Int
 end
 
-immutable HexagonCubic <: Hexagon
+struct HexagonCubic <: Hexagon
     x::Int
     y::Int
     z::Int
 end
 
-immutable HexagonOffsetOddR <: Hexagon
+struct HexagonOffsetOddR <: Hexagon
     q::Int
     r::Int
 end
 
-immutable HexagonOffsetEvenR <: Hexagon
+struct HexagonOffsetEvenR <: Hexagon
     q::Int
     r::Int
 end
@@ -107,7 +105,7 @@ end
 # Neighbor hexagon iterator
 # -------------------------
 
-immutable HexagonNeighborIterator
+struct HexagonNeighborIterator
     hex::HexagonCubic
 end
 
@@ -138,7 +136,7 @@ end
 # Diagonal hexagon iterator
 # -------------------------
 
-immutable HexagonDiagonalIterator
+struct HexagonDiagonalIterator
     hex::HexagonCubic
 end
 
@@ -169,7 +167,7 @@ end
 # Iterator over the vertices of a hexagon
 # ---------------------------------------
 
-immutable HexagonVertexIterator
+struct HexagonVertexIterator
     x_center::Float64
     y_center::Float64
     xsize::Float64
@@ -195,9 +193,9 @@ end
 
 # TODO: remove this function?
 function hexpoints(x, y, xsize=1.0, ysize=1.0)
-    collect((@compat Tuple{Float64, Float64}),
-            HexagonVertexIterator((@compat Float64(x)), (@compat Float64(y)),
-                                  (@compat Float64(xsize)), (@compat Float64(ysize))))
+    collect((Tuple{Float64, Float64}),
+            HexagonVertexIterator((Float64(x)), (Float64(y)),
+                                  (Float64(xsize)), (Float64(ysize))))
 end
 
 length(::HexagonVertexIterator) = 6
@@ -211,7 +209,7 @@ function next(it::HexagonVertexIterator, state)
     return ((x_i, y_i), state+1)
 end
 
-immutable HexagonDistanceIterator
+struct HexagonDistanceIterator
     hex::HexagonCubic
     n::Int
 end
@@ -224,9 +222,9 @@ hexagons_within(hex::Hexagon, n::Int) = hexagons_within(n, hex)
 
 length(it::HexagonDistanceIterator) = it.n * (it.n + 1) * 3 + 1
 start(it::HexagonDistanceIterator) = (-it.n, 0)
-done(it::HexagonDistanceIterator, state::(@compat Tuple{Int, Int})) = (state[1] > it.n)
+done(it::HexagonDistanceIterator, state::(Tuple{Int, Int})) = (state[1] > it.n)
 
-function next(it::HexagonDistanceIterator, state::(@compat Tuple{Int,Int}))
+function next(it::HexagonDistanceIterator, state::(Tuple{Int,Int}))
     x, y = state
     z = -x-y
     hex = HexagonCubic(x, y, z)
@@ -243,7 +241,7 @@ collect(it::HexagonDistanceIterator) = collect(HexagonCubic, it)
 # Iterator over a ring of hexagons
 # ---------------------------------------
 
-immutable HexagonRingIterator
+struct HexagonRingIterator
     hex::HexagonCubic
     n::Int
 end
@@ -257,9 +255,9 @@ ring(hex::Hexagon, n::Int) = ring(n, hex)
 
 length(it::HexagonRingIterator) = it.n * 6
 start(it::HexagonRingIterator) = (1, neighbor(it.hex, 5, it.n))
-done(it::HexagonRingIterator, state::(@compat Tuple{Int, HexagonCubic})) = state[1] > length(it)
+done(it::HexagonRingIterator, state::(Tuple{Int, HexagonCubic})) = state[1] > length(it)
 
-function next(it::HexagonRingIterator, state::(@compat Tuple{Int, HexagonCubic}))
+function next(it::HexagonRingIterator, state::(Tuple{Int, HexagonCubic}))
     hex_i, cur_hex = state
     # println("HexagonRingIterator: at position $hex_i ($cur_hex)")
     ring_part = div(hex_i - 1, it.n) + 1
@@ -272,12 +270,12 @@ collect(it::HexagonRingIterator) = collect(HexagonCubic, it)
 # Iterator over all hexes within a certain distance
 # -------------------------------------------------
 
-immutable HexagonSpiralIterator
+struct HexagonSpiralIterator
     hex::HexagonCubic
     n::Int
 end
 
-immutable HexagonSpiralIteratorState
+struct HexagonSpiralIteratorState
     hexring_i::Int
     hexring_it::HexagonRingIterator
     hexring_it_i::Int
@@ -357,7 +355,7 @@ end
 
 # Find the nearest hexagon in cubic coordinates.
 function nearest_cubic_hexagon(x::Real, y::Real, z::Real)
-    rx, ry, rz = @compat round(Integer, x), round(Integer, y), round(Integer, z)
+    rx, ry, rz = round(Integer, x), round(Integer, y), round(Integer, z)
     x_diff, y_diff, z_diff = abs(rx - x), abs(ry - y), abs(rz - z)
 
     if x_diff > y_diff && x_diff > z_diff
