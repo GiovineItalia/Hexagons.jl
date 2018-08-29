@@ -1,5 +1,5 @@
 using Hexagons
-using Base.Test
+using Test
 
 convert(HexagonOffsetOddR, HexagonAxial(2, 4))
 
