@@ -2,7 +2,7 @@ module Hexagons
 
 using Compat
 
-import Base: convert, start, next, done, length, collect
+import Base: convert, iterate, length, collect
 
 export HexagonAxial, HexagonCubic, HexagonOffsetOddR, HexagonOffsetEvenR,
        hexagon, center, hexpoints, cube_round, cube_linedraw, neighbor,
@@ -121,10 +121,8 @@ const CUBIC_HEX_NEIGHBOR_OFFSETS = [
 neighbors(hex::Hexagon) = HexagonNeighborIterator(convert(HexagonCubic, hex))
 
 length(::HexagonNeighborIterator) = 6
-start(::HexagonNeighborIterator) = 1
-done(::HexagonNeighborIterator, state::Int) = state > 6
-
-function next(it::HexagonNeighborIterator, state::Int)
+function iterate(it::HexagonNeighborIterator, state::Int=1)
+    state>6 && return nothing
     dx = CUBIC_HEX_NEIGHBOR_OFFSETS[state, 1]
     dy = CUBIC_HEX_NEIGHBOR_OFFSETS[state, 2]
     dz = CUBIC_HEX_NEIGHBOR_OFFSETS[state, 3]
@@ -152,10 +150,8 @@ const CUBIC_HEX_DIAGONAL_OFFSETS = [
 diagonals(hex::Hexagon) = HexagonDiagonalIterator(convert(HexagonCubic, hex))
 
 length(::HexagonDiagonalIterator) = 6
-start(::HexagonDiagonalIterator) = 1
-done(::HexagonDiagonalIterator, state::Int) = state > 6
-
-function next(it::HexagonDiagonalIterator, state::Int)
+function iterate(it::HexagonDiagonalIterator, state::Int=1)
+    state>6 && return nothing
     dx = CUBIC_HEX_DIAGONAL_OFFSETS[state, 1]
     dy = CUBIC_HEX_DIAGONAL_OFFSETS[state, 2]
     dz = CUBIC_HEX_DIAGONAL_OFFSETS[state, 3]
@@ -199,10 +195,8 @@ function hexpoints(x, y, xsize=1.0, ysize=1.0)
 end
 
 length(::HexagonVertexIterator) = 6
-start(::HexagonVertexIterator) = 1
-done(::HexagonVertexIterator, state::Int) = state > 6
-
-function next(it::HexagonVertexIterator, state)
+function iterate(it::HexagonVertexIterator, state::Int=1)
+    state>6 && return nothing
     theta = 2*pi/6 * (state-1+0.5)
     x_i = it.x_center + it.xsize * cos(theta)
     y_i = it.y_center + it.ysize * sin(theta)
@@ -221,10 +215,8 @@ end
 hexagons_within(hex::Hexagon, n::Int) = hexagons_within(n, hex)
 
 length(it::HexagonDistanceIterator) = it.n * (it.n + 1) * 3 + 1
-start(it::HexagonDistanceIterator) = (-it.n, 0)
-done(it::HexagonDistanceIterator, state::Tuple{Int, Int}) = (state[1] > it.n)
-
-function next(it::HexagonDistanceIterator, state::Tuple{Int,Int})
+function iterate(it::HexagonDistanceIterator, state::Tuple{Int,Int}=(-it.n, 0))
+    state[1]>it.n && return nothing
     x, y = state
     z = -x-y
     hex = HexagonCubic(x, y, z)
@@ -254,10 +246,8 @@ end
 ring(hex::Hexagon, n::Int) = ring(n, hex)
 
 length(it::HexagonRingIterator) = it.n * 6
-start(it::HexagonRingIterator) = (1, neighbor(it.hex, 5, it.n))
-done(it::HexagonRingIterator, state::Tuple{Int, HexagonCubic}) = state[1] > length(it)
-
-function next(it::HexagonRingIterator, state::(Tuple{Int, HexagonCubic}))
+function iterate(it::HexagonRingIterator, state::(Tuple{Int, HexagonCubic})=(1, neighbor(it.hex, 5, it.n)))
+    state[1]>length(it) && return nothing
     hex_i, cur_hex = state
     # println("HexagonRingIterator: at position $hex_i ($cur_hex)")
     ring_part = div(hex_i - 1, it.n) + 1
@@ -289,17 +279,18 @@ end
 spiral(hex::Hexagon, n::Int) = spiral(n, hex)
 
 length(it::HexagonSpiralIterator) = it.n * (it.n + 1) * 3
-function start(it::HexagonSpiralIterator)
-    first_ring = ring(it.hex, 1)
-    HexagonSpiralIteratorState(1, first_ring, start(first_ring)...)
-end
-done(it::HexagonSpiralIterator, state::HexagonSpiralIteratorState) = state.hexring_i > it.n
 
 # The state of a HexagonSpiralIterator consists of
 # 1. an Int, the index of the current ring
 # 2. a HexagonRingIterator and its state to keep track of the current position
 #    in the ring.
-function next(it::HexagonSpiralIterator, state::HexagonSpiralIteratorState)
+function iterate(it::HexagonSpiralIterator)
+    first_ring = ring(it.hex, 1)
+    iterate(it, HexagonSpiralIteratorState(1, first_ring, start(first_ring)...))
+end
+
+function iterate(it::HexagonSpiralIterator, state::HexagonSpiralIteratorState)
+    state.hexring_i>it.n && return nothing
     # Get current state
     hexring_i, hexring_it, hexring_it_i, hexring_it_hex =
         state.hexring_i, state.hexring_it, state.hexring_it_i, state.hexring_it_hex
