@@ -51,7 +51,7 @@ h = cube_round(23.5, 4.67)
 ## Status
 
 This library is not mature or complete, but provides just enough to implement
-hexagonal bin visualizations. If you're hexagon project requires something
+hexagonal bin visualizations. If your hexagon project requires something
 that's not provided, file bug or pull request.
 
 
