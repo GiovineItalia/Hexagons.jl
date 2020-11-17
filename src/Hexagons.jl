@@ -62,7 +62,7 @@ function convert(::Type{HexagonAxial}, hex::HexagonOffsetEvenR)
 end
 
 function convert(::Type{HexagonCubic}, hex::HexagonAxial)
-    HexagonCubic(hex.q, hex.r, -hex.q - hex.r)
+    HexagonCubic(hex.q, -hex.q - hex.r, hex.r)
 end
 
 function convert(::Type{HexagonCubic}, hex::HexagonOffsetOddR)
@@ -329,7 +329,7 @@ function distance(a::Hexagon, b::Hexagon)
         abs(hexa.z - hexb.z))
 end
 
-function center(hex::Hexagon, xsize=1.0, ysize=1.0, xoff=1.0, yoff=1.0)
+function center(hex::Hexagon, xsize=1.0, ysize=1.0, xoff=0.0, yoff=0.0)
     axh = convert(HexagonAxial, hex)
     (xoff + xsize * sqrt(3) * (axh.q + axh.r/2), yoff + ysize * (3/2) * axh.r)
 end
@@ -375,21 +375,7 @@ function cube_round(x, y, xsize=1.0, ysize=1.0)
     q = sqrt(3)/3 * x - y/3
     r = 2 * y / 3
     h = nearest_cubic_hexagon(q, -q - r, r)
-    #return h
-
-    x0, y0 = center(h)
-    d0 = (x0-x)^2 + (y0-y)^2
-    h_best = h
-    d_best = d0
-    for neighbor in neighbors(h)
-        xn, yn = center(neighbor)
-        dn = (xn-x)^2 + (yn-y)^2
-        if dn < d_best
-            d_best = dn
-            h_best = neighbor
-        end
-    end
-    h_best
+    return h
 end
 
 end # module Hexagons
