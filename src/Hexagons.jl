@@ -66,8 +66,8 @@ function rhomboid_print(square_matrix::Array)
     end
 end
 
-mock = [0 1 1 0; 1 0 0 1; 1 0 0 1; 0 1 1 0]
-rhomboid_print(mock)
+#mock = [0 1 1 0; 1 0 0 1; 1 0 0 1; 0 1 1 0]
+#rhomboid_print(mock)
 
 # Convert between hexagon indexing
 # --------------------------------
