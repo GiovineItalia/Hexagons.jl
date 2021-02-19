@@ -45,6 +45,29 @@ end
 hexagon(x::Int, y::Int, z::Int) = HexagonCubic(x, y, z)
 hexagon(q::Int, r::Int) = HexagonAxial(q, r)
 
+# Print a square matrix in a rhomboid form for human inspection
+# ------------------------------------------------------
+
+function rhomboid_print(square_matrix::Array)
+    side_length              = trunc(Int, length(square_matrix) ^ 0.5)
+    transposed_square        = square_matrix'
+    spaces                   = string.(collect(" " ^ side_length))
+    for i in 1:side_length
+        start                = 1+(i-1)* side_length
+        stop                 =   (i)  * side_length
+        this_row             = string.(Int.(transposed_square[start:stop]))
+        both                 = [collect(pair) for pair in zip(this_row, spaces)]
+        all_both             = vcat(both...)
+        pretty_both          = string(all_both...)
+        pad_left             = " " ^ i
+        padded_pretty        = hcat(pad_left, pretty_both)
+        joined_padded_pretty = string(padded_pretty...)
+        println(joined_padded_pretty)
+    end
+end
+
+#mock = [0 1 1 0; 1 0 0 1; 1 0 0 1; 0 1 1 0]
+#rhomboid_print(mock)
 
 # Convert between hexagon indexing
 # --------------------------------
